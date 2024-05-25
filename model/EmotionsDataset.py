@@ -21,7 +21,11 @@ def get_path(filename):
 
 # Embedding conversion pipeline (Label = False, Text = True)
 def pipeline(data, type):
+    if glob_vocab is None: raise RuntimeError("Dataset not loaded...")
     return glob_vocab(TOKENIZER(data)) if type else data
+
+def get_vocab_size():
+    return len(glob_vocab)
 
 # collate_fn for DataLoader
 def batchify(batch):
@@ -43,7 +47,7 @@ class EmotionsDataset():
         if int(sum(SPLIT)) != 1: raise ValueError("Data splits must sum to 1")
 
         self.emotions_data = pd.read_json(get_path(path_name), lines=True)
-        self.emotions_data = list(zip(self.emotions_data["label"], self.emotions_data["text"]))
+        self.emotions_data = list(zip(self.emotions_data["label"][:5000], self.emotions_data["text"][:5000]))
         self.dataset_size = len(self.emotions_data)
 
         # Prepare vocabulary
@@ -71,4 +75,5 @@ class EmotionsDataset():
 if __name__ == '__main__':
     emotions_dataset = EmotionsDataset("data/emotions.json")
 
-    dataloader = DataLoader(emotions_dataset.get_train(), batch_size=8, shuffle=False, collate_fn=batchify)
+    # dataloader = DataLoader(emotions_dataset.get_train(), batch_size=8, shuffle=False, collate_fn=batchify)
+    print(pipeline("i beleive that i am much more sensitive to other peoples feelings and tend to be more compassionate", True))
