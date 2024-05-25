@@ -8,9 +8,10 @@ import time
 from torch.utils.data import DataLoader
 from torch.nn.init import xavier_uniform
 from model.EmotionsDataset import *
+from os import path, mkdir
 
 # Consts
-EPOCHS = 2
+EPOCHS = 3
 BATCH = 12
 EMBED_SIZE = 256
 NUM_CLASSES = 6
@@ -48,6 +49,13 @@ class EmotionClassifier(nn.Module):
         out = self.fc2(out)
         return out
 
+def out_stats(iter, size, time, accuracy, loss, color):
+    print(
+        f"\r   {color.grey_bold('Iter:')} {iter}/{size}, "
+        f"{color.grey_bold('Elapsed time:')} "
+        f"{int(time)}s, "
+        f"{color.grey_bold('Accuracy:')} {accuracy * 100:2.2f}%, "
+        f"{color.grey_bold('Loss:')} {loss * BATCH:.6f}", end='')
 # Train model
 def train_net(dataloader, net, optimizer, loss_fn, color):
     net.train()
@@ -65,13 +73,13 @@ def train_net(dataloader, net, optimizer, loss_fn, color):
         loss_total += loss
         optimizer.step()
 
-        if (idx + 1) % interval == 0:   # Update stats every 100 intervals
-            elapsed = time.time() - start_time
-            print(f"\r\t{color.grey_bold('Elapsed time:')} {int(elapsed)}s, "
-                  f"{color.grey_bold('Accuracy:')} {correct / count * 100:2.2f}%, "
-                  f"{color.grey_bold('Loss:')} {loss_total / count * BATCH:.6f}", end='')
+        # Update stats every interval intervals
+        if (idx) % interval == 0 or idx == len(dataloader):
+            out_stats(idx, len(dataloader), time.time() - start_time, correct / count, loss_total / count, color)
 
-    print() # Newline
+    # Print final stats to account for off-by-one
+    out_stats(len(dataloader), len(dataloader), time.time() - start_time, correct / count, loss_total / count, color)
+    print()
 
 # Validate model
 def val_net(dataloader, net, color):
@@ -95,7 +103,7 @@ def test_net(dataloader, net, color):
             accuracy += (pred.argmax(1) == label).sum().item()
             count += BATCH
 
-    print(f"{color.green_bold('Final Test Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(60))
+    print(f"{color.green_bold('Test Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(57))
 
 # Training a new model
 def training_loop(color):
@@ -134,3 +142,8 @@ def training_loop(color):
 
     # Test our model
     test_net(test_dataloader, net, color)
+
+    if not path.exists("trained"): mkdir("trained")
+    torch.save(net.state_dict(), "trained/model.pt")
+
+    print(color.success_tag("Saved trained model to trained/model.pt"))

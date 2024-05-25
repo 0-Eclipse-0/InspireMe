@@ -17,7 +17,7 @@ def download_emotions_dataset(color):
     if not os.path.exists("data"): os.makedirs("data")  # Make data directory
 
     # Download file from website
-    for _ in tqdm(range(5)):
+    for _ in tqdm(range(5), leave=False):
         response = requests.get("https://huggingface.co/datasets/dair-ai/emotion/resolve/main/data/data.jsonl.gz")
 
         if response.status_code != 200:
@@ -26,7 +26,7 @@ def download_emotions_dataset(color):
 
     # Unzip file
     print(color.print_tag("Decompressing..."))
-    for _ in tqdm(range(2)):
+    for _ in tqdm(range(2), leave=False):
         with open(out_file + ".gzip", "wb") as f:
             f.write(response.content)
 

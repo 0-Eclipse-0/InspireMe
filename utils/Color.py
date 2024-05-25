@@ -1,5 +1,4 @@
 # Colorization class for dialogue
-PROG_NAME = "InspireMe"
 
 class Color(object):
     def error_tag(self, text):
@@ -9,10 +8,10 @@ class Color(object):
         return f"[\033[1;92mSuccess\033[00m] {text}"
 
     def warn_tag(self, text):
-        return f"[\033[1;93mWarning\033[00m] {text}"
+        return f"[\033[1;93mWarn\033[00m] {text}"
 
     def print_tag(self, text):
-        return f"[\033[1;96m{PROG_NAME}\033[00m] {text}"
+        return f"[\033[1;96mSetup\033[00m] {text}"
 
     def grey(self, text):
         return f"\033[0;37m{text}\033[00m"
