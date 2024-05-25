@@ -16,6 +16,7 @@ BATCH = 12
 EMBED_SIZE = 256
 NUM_CLASSES = 6
 HIDDEN_SIZE = 128
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Globals
 glob_model = None
@@ -108,7 +109,7 @@ def test_net(dataloader, net, color):
 # Training a new model
 def training_loop(color):
     data = EmotionsDataset("data/emotions.json")
-    net = EmotionClassifier()
+    net = EmotionClassifier().to(DEVICE)
     optimizer = optim.Adam(net.parameters())
     loss_fn = nn.CrossEntropyLoss()
 

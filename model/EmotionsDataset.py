@@ -47,7 +47,7 @@ class EmotionsDataset():
         if int(sum(SPLIT)) != 1: raise ValueError("Data splits must sum to 1")
 
         self.emotions_data = pd.read_json(get_path(path_name), lines=True)
-        self.emotions_data = list(zip(self.emotions_data["label"][:10000], self.emotions_data["text"][:10000]))
+        self.emotions_data = list(zip(self.emotions_data["label"], self.emotions_data["text"]))
         self.dataset_size = len(self.emotions_data)
 
         # Prepare vocabulary
