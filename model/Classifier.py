@@ -7,10 +7,10 @@ import time
 
 from torch.utils.data import DataLoader
 from torch.nn.init import xavier_uniform
-from EmotionsDataset import *
+from model.EmotionsDataset import *
 
 # Consts
-EPOCHS = 20
+EPOCHS = 2
 BATCH = 12
 EMBED_SIZE = 256
 NUM_CLASSES = 6
@@ -48,9 +48,10 @@ class EmotionClassifier(nn.Module):
         out = self.fc2(out)
         return out
 
-def train(dataloader, net, optimizer, loss_fn):
+# Train model
+def train_net(dataloader, net, optimizer, loss_fn, color):
     net.train()
-    correct, count, interval = 0, 0, 100
+    correct, count, loss_total, interval = 0, 0, 0, 10
     start_time = time.time()
 
     for idx, (label, text, offsets) in enumerate(dataloader):
@@ -61,16 +62,19 @@ def train(dataloader, net, optimizer, loss_fn):
         torch.nn.utils.clip_grad_norm_(net.parameters(), 0.1)
         correct += (pred.argmax(1) == label).sum().item()
         count += BATCH
+        loss_total += loss
         optimizer.step()
 
         if (idx + 1) % interval == 0:   # Update stats every 100 intervals
             elapsed = time.time() - start_time
-            print(f"\r\tElapsed time: {int(elapsed)}s, Accuracy: {correct / count * 100:2.2f}%", end='')
-            total_acc, total_count = 0, 0
+            print(f"\r\t{color.grey_bold('Elapsed time:')} {int(elapsed)}s, "
+                  f"{color.grey_bold('Accuracy:')} {correct / count * 100:2.2f}%, "
+                  f"{color.grey_bold('Loss:')} {loss_total / count * BATCH:.6f}", end='')
 
     print() # Newline
 
-def val(dataloader, net):
+# Validate model
+def val_net(dataloader, net, color):
     accuracy, count = 0, 0
 
     with torch.no_grad():
@@ -79,10 +83,22 @@ def val(dataloader, net):
             accuracy += (pred.argmax(1) == label).sum().item()
             count += BATCH
 
-    print(f"\tValidation Accuracy: {accuracy / count * 100:2.2f}%\n")
+    print(f"{color.grey_bold('Validation Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(60))
+
+# Test model
+def test_net(dataloader, net, color):
+    accuracy, count = 0, 0
+
+    with torch.no_grad():
+        for _, (label, text, offsets) in enumerate(dataloader):
+            pred = net(text, offsets)
+            accuracy += (pred.argmax(1) == label).sum().item()
+            count += BATCH
+
+    print(f"{color.green_bold('Final Test Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(60))
 
 # Training a new model
-def training_loop():
+def training_loop(color):
     data = EmotionsDataset("data/emotions.json")
     net = EmotionClassifier()
     optimizer = optim.Adam(net.parameters())
@@ -103,13 +119,18 @@ def training_loop():
         collate_fn=batchify
     )
 
-    # Run training loop
-    print("Training on Emotions Dataset...")
-    for epoch in range(EPOCHS):
-        print(f"Epoch {epoch + 1}: ")
-        train(train_dataloader, net, optimizer, loss_fn)
-        val(valid_dataloader, net)
+    test_dataloader = DataLoader(
+        data.get_test(),
+        batch_size=BATCH,
+        shuffle=True,
+        collate_fn=batchify
+    )
 
-# For testing purposes only
-if __name__ == "__main__":
-    training_loop()
+    # Run training loop
+    for epoch in range(EPOCHS):
+        print(color.white_bold(f"Epoch #{epoch + 1}").rjust(50))
+        train_net(train_dataloader, net, optimizer, loss_fn, color)
+        val_net(valid_dataloader, net, color)
+
+    # Test our model
+    test_net(test_dataloader, net, color)
