@@ -7,5 +7,5 @@ get_emotions() {
   mv data.jsonl data/emotions.json
 }
 
-rm -rf data/*
+mkdir data
 get_emotions
