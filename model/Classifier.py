@@ -11,21 +11,18 @@ from model.EmotionsDataset import *
 from os import path, mkdir
 
 # Consts
-EPOCHS = 3
+EPOCHS = 4
 BATCH = 12
 EMBED_SIZE = 256
 NUM_CLASSES = 6
 HIDDEN_SIZE = 128
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Globals
-glob_model = None
-
 # Testing network, to be changed to RNN or Transformer
 class EmotionClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, vocab_size):
         super(EmotionClassifier, self).__init__()
-        self.embedding = nn.EmbeddingBag(get_vocab_size(),
+        self.embedding = nn.EmbeddingBag(vocab_size,
                                          EMBED_SIZE,
                                          sparse=False)
         self.fc1 = nn.Linear(in_features=EMBED_SIZE, out_features=HIDDEN_SIZE)
@@ -69,7 +66,7 @@ def train_net(dataloader, net, optimizer, loss_fn, color):
         loss = loss_fn(pred, label)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(net.parameters(), 0.1)
-        correct += (pred.argmax(1) == label).sum().item()
+        correct += (pred.argmax(dim=1) == label).sum().item()
         count += BATCH
         loss_total += loss
         optimizer.step()
@@ -89,7 +86,7 @@ def val_net(dataloader, net, color):
     with torch.no_grad():
         for _, (label, text, offsets) in enumerate(dataloader):
             pred = net(text, offsets)
-            accuracy += (pred.argmax(1) == label).sum().item()
+            accuracy += (pred.argmax(dim=1) == label).sum().item()
             count += BATCH
 
     print(f"{color.grey_bold('Validation Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(60))
@@ -101,7 +98,7 @@ def test_net(dataloader, net, color):
     with torch.no_grad():
         for _, (label, text, offsets) in enumerate(dataloader):
             pred = net(text, offsets)
-            accuracy += (pred.argmax(1) == label).sum().item()
+            accuracy += (pred.argmax(dim=1) == label).sum().item()
             count += BATCH
 
     print(f"{color.green_bold('Test Accuracy:')} {accuracy / count * 100:2.2f}%\n".rjust(57))
@@ -109,7 +106,7 @@ def test_net(dataloader, net, color):
 # Training a new model
 def training_loop(color):
     data = EmotionsDataset("data/emotions.json")
-    net = EmotionClassifier().to(DEVICE)
+    net = EmotionClassifier(len(data.vocab)).to(DEVICE)
     optimizer = optim.Adam(net.parameters())
     loss_fn = nn.CrossEntropyLoss()
 
@@ -118,21 +115,21 @@ def training_loop(color):
         data.get_train(),
         batch_size=BATCH,
         shuffle=True,
-        collate_fn=batchify
+        collate_fn=lambda batch: batchify(batch, data.vocab)
     )
 
     valid_dataloader = DataLoader(
         data.get_val(),
         batch_size=BATCH,
         shuffle=True,
-        collate_fn=batchify
+        collate_fn=lambda batch: batchify(batch, data.vocab)
     )
 
     test_dataloader = DataLoader(
         data.get_test(),
         batch_size=BATCH,
         shuffle=True,
-        collate_fn=batchify
+        collate_fn=lambda batch: batchify(batch, data.vocab)
     )
 
     # Run training loop

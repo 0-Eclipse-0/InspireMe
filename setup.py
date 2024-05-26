@@ -8,6 +8,7 @@ import requests
 
 from sys import exit
 from tqdm import tqdm
+from model.Predictor import Predictor
 from utils.Color import Color
 
 # Handle file control for eotions dataset
@@ -70,3 +71,8 @@ def model_check(color):
 if __name__ == "__main__":
     color = Color()
     model_check(color)
+    predictor = Predictor()
+
+    while True:
+        statement = input("Enter a statement with what you're thinking: ")
+        predictor.predict(statement)

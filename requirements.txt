@@ -4,4 +4,4 @@ numpy>=1.26.4
 configparser>=7.0.0
 pandas
 tqdm
-gzip
+spacy
