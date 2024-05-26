@@ -1,7 +1,7 @@
 # Setup for backend of the program
 # Notifies the user of any required steps before using InspireMe
 
-import model.Classifier
+import model.Trainer
 import os
 import gzip
 import requests
@@ -39,6 +39,21 @@ def download_emotions_dataset(color):
 
     print(color.success_tag("Dataset download successfully, saved to data/emotions.json"))
 
+# Handle file control for the goemotions dataset
+def download_go_emotions_dataset(color):
+    response = None
+    out_file = "data/emotions.json"
+    if not os.path.exists("data"): os.makedirs("data")  # Make data directory
+
+    # Download file from website
+    for _ in tqdm(range(5), leave=False):
+        response = requests.get("https://huggingface.co/datasets/dair-ai/emotion/resolve/main/data/data.jsonl.gz")
+
+        if response.status_code != 200:
+            print(color.error_tag, "Error downloading emotions dataset, check connection")
+            exit(-1)
+
+
 # Run model checks
 def model_check(color):
     print('—' * 10, color.white_bold("Model Checks"), '—' * 10)
@@ -61,7 +76,7 @@ def model_check(color):
                 print(color.success_tag("Found dataset in data/emotions.json"))
 
             print(color.print_tag("Training model..."))
-            model.Classifier.training_loop(color)
+            model.Trainer.training_loop(color)
         elif do_train == '2':
             pass # Download a pretrained model TODO
         else:
