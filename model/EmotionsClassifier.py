@@ -24,8 +24,8 @@ class EmotionClassifier(nn.Module):
                                          EMBED_SIZE,
                                          sparse=False)
         self.fc1 = nn.Linear(in_features=EMBED_SIZE, out_features=HIDDEN_SIZE)
-        self.dropout = nn.Dropout(p=0.5)
-        self.LSTM = nn.LSTM(HIDDEN_SIZE, HIDDEN_SIZE, batch_first=True, num_layers=2)
+        self.dropout = nn.Dropout(p=0.25)
+        self.GRU = nn.GRU(HIDDEN_SIZE, HIDDEN_SIZE, batch_first=True, num_layers=2)
         self.fc2 = nn.Linear(HIDDEN_SIZE, NUM_CLASSES)
         self.init_weights()
 
@@ -41,6 +41,6 @@ class EmotionClassifier(nn.Module):
         out = self.embedding(text, offsets)
         out = self.fc1(out)
         out = self.dropout(out)
-        out, _ = self.LSTM(out)
+        out, _ = self.GRU(out)
         out = self.fc2(out)
         return out

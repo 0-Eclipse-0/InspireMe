@@ -79,7 +79,7 @@ def test_net(dataloader, net, color):
 def training_loop(color):
     data = EmotionsDataset("data/emotions.json")
     net = EmotionClassifier(len(data.vocab)).to(DEVICE)
-    optimizer = optim.Adam(net.parameters())
+    optimizer = optim.Adam(net.parameters(), weight_decay=1e-5, lr=5e-4)
     loss_fn = nn.CrossEntropyLoss()
 
     # Load datasets
