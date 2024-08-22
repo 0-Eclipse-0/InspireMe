@@ -1,15 +1,15 @@
-# InspireMe
-A program leveraging machine learning to turn your frown upside down by taking statements 
-from you and responding with inspirational statements (or the opposite if you seem too happy).
+# PredEmotions
+A neural network dedicated to sentiment classification based on the underlying emotions
+of a sentence.
 
-### Initial Plan
-1. Allow users to input a sentence about how they're feeling.
-   - `I feel shitty today.`
-2. Utilize an RNN to classify the text into a category related to their feelings 
-   - `I feel shitty today.` -> `sadness`
-3. Use the class and the text itself to relate a generated quote to the given text 
-    - `“There's always tomorrow and it always gets better.” - Ariana Grande`
+## Usage
+1. Install the requirements using `pip install -r requirements.txt`
+2. Getting a model
+    - Using a pretrained model: Move the model to `trained/model.pt` or use the existing model in the repository
+    - Training a model:
+       1. The dataset should placed in `data`.
+       2. Run `python3 setupy.py`, it will explain the rest:
+3. Running the classifier: Running the command `python3 setup.py` and hitting enter will start the inference loop.
 
 ### Datasets Being Used
 - [Text to Emotion Classification](https://huggingface.co/datasets/dair-ai/emotion)
-- [Emotion to Quote Generation](https://www.kaggle.com/datasets/manann/quotes-500k)
