@@ -11,5 +11,11 @@ of a sentence.
        2. Run `python3 setupy.py`, it will explain the rest:
 3. Running the classifier: Running the command `python3 setup.py` and hitting enter will start the inference loop.
 
+## Using in Your Program
+This is more of a proof of concept so there is no package to install this and directly integrate it. To use it the source code can
+be included in your program and once the dataset and model are in the proper location you can include the prediction pipeline
+with `from {Insert Source Location}.model.Predictor import Predictor` and run `Predictor().predict(string)`. Feel free to adapt and modify
+the code to your needs.
+
 ### Datasets Being Used
 - [Text to Emotion Classification](https://huggingface.co/datasets/dair-ai/emotion)
